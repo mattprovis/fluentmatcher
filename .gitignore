@@ -27,8 +27,3 @@ hs_err_pid*
 # Maven
 log/
 target/
-
-# Jetty
-var/
-hs_err_pid*.log
-*_jsp.java
