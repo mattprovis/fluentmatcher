@@ -3,6 +3,7 @@ package com.mattprovis.fluentmatcher;
 import com.google.common.primitives.Primitives;
 import com.squareup.javawriter.JavaWriter;
 import org.hamcrest.Matcher;
+import org.hamcrest.core.IsEqual;
 import org.unitils.util.ReflectionUtils;
 
 import java.io.IOException;
@@ -23,6 +24,8 @@ import static org.apache.commons.lang.StringUtils.uncapitalize;
 
 public class FluentMatcherGenerator {
 
+    private FluentMatcherGenerator() { }
+
     public static void generateMatcherFor(Class<?> beanClass, Writer out) throws IOException {
         JavaWriter javaWriter = new JavaWriter(out);
 
@@ -31,9 +34,30 @@ public class FluentMatcherGenerator {
 
         List<Field> fields = new ArrayList<>(ReflectionUtils.getAllFields(beanClass));
 
-        HashSet<Class> imports = new HashSet<Class>();
+        writeClassDeclaration(javaWriter, beanClass, beanClassName, matcherClassName, getImports(fields));
+
+        writeFieldsEnum(javaWriter, fields);
+
+        writeConstructor(javaWriter, beanClassName);
+
+        writeStaticFactoryMethod(javaWriter, beanClassName, matcherClassName);
+
+        for (Field field : fields) {
+            String fieldName = field.getName();
+            Type fieldGenericType = field.getGenericType();
+
+            writeWithValueMethodForField(javaWriter, matcherClassName, fieldName, fieldGenericType);
+            writeWithMatcherMethodForField(javaWriter, matcherClassName, fieldName, fieldGenericType);
+        }
+
+        writeClassFooter(javaWriter);
+    }
+
+    private static Class[] getImports(List<Field> fields) {
+        HashSet<Class> imports = new HashSet<>();
         imports.add(FluentMatcher.class);
         imports.add(Matcher.class);
+        imports.add(IsEqual.class);
 
         for (Field field : fields) {
             Class<?> type = field.getType();
@@ -41,14 +65,20 @@ public class FluentMatcherGenerator {
                 imports.add(type);
             }
         }
+        return imports.toArray(new Class[imports.size()]);
+    }
 
+    private static void writeClassDeclaration(JavaWriter javaWriter, Class<?> beanClass, String beanClassName, String matcherClassName, Class[] imports) throws IOException {
+        String extendsType = FluentMatcher.class.getSimpleName() + "<" + beanClassName + ">";
         javaWriter
                 .emitPackage(beanClass.getPackage().getName())
-                .emitImports(imports.toArray(new Class[imports.size()]))
+                .emitImports(imports)
                 .emitEmptyLine()
-                .beginType(matcherClassName, "class", of(PUBLIC), FluentMatcher.class.getSimpleName() + "<" + beanClassName + ">")
+                .beginType(matcherClassName, "class", of(PUBLIC), extendsType)
                 .emitEmptyLine();
+    }
 
+    private static void writeFieldsEnum(JavaWriter javaWriter, List<Field> fields) throws IOException {
         javaWriter
                 .beginType("FieldName", "enum", of(PRIVATE));
 
@@ -60,40 +90,84 @@ public class FluentMatcherGenerator {
         }
         javaWriter.endType()
                 .emitEmptyLine();
+    }
 
+    private static void writeConstructor(JavaWriter javaWriter, String beanClassName) throws IOException {
         javaWriter
-                .beginConstructor(of(PUBLIC)).emitStatement("super(%s.class)", beanClassName).endConstructor()
-                .emitEmptyLine()
+                .beginConstructor(of(PRIVATE)).emitStatement("super(%s.class)", beanClassName).endConstructor()
+                .emitEmptyLine();
+    }
+
+    private static void writeStaticFactoryMethod(JavaWriter javaWriter, String beanClassName, String matcherClassName) throws IOException {
+        javaWriter
                 .beginMethod(matcherClassName, uncapitalize(beanClassName), of(PUBLIC, STATIC))
                 .emitStatement("return new %s()", matcherClassName)
                 .endMethod()
                 .emitEmptyLine();
-
-        for (Field field : fields) {
-            String fieldName = field.getName();
-            String fieldType = field.getType().getSimpleName();
-            Type fieldGenericType = field.getGenericType();
-
-            String methodName = "with" + capitalize(fieldName);
-
-            String matcherType;
-            if (fieldGenericType instanceof Class) {
-                Class fieldClass = (Class) fieldGenericType;
-                matcherType = "? super " + Primitives.wrap(fieldClass).getSimpleName();
-            } else if (fieldGenericType instanceof ParameterizedType) {
-                matcherType = "? super " + fieldType + "<Object>";
-            } else {
-                matcherType = "Object";
-            }
-
-            javaWriter.beginMethod(matcherClassName, methodName, of(PUBLIC), "Matcher<" + matcherType + ">", "matcher");
-            javaWriter.emitStatement("registerFieldMatcher(FieldName.%s.name(), matcher)", fieldName);
-            javaWriter.emitStatement("return this");
-            javaWriter.endMethod().emitEmptyLine();
-        }
-
-        javaWriter
-                .endType();
     }
 
+    private static void writeWithValueMethodForField(JavaWriter javaWriter, String matcherClassName, String fieldName, Type fieldGenericType) throws IOException {
+        String methodName = "with" + capitalize(fieldName);
+
+        String fieldType = null;
+        if (fieldGenericType instanceof Class) {
+            Class fieldClass = (Class) fieldGenericType;
+            fieldType = Primitives.wrap(fieldClass).getName();
+        } else if (fieldGenericType instanceof ParameterizedType) {
+            ParameterizedType fieldClass = (ParameterizedType) fieldGenericType;
+            Type rawType = fieldClass.getRawType();
+            if (rawType instanceof Class) {
+                Type[] typeArguments = fieldClass.getActualTypeArguments();
+
+                String genericType = "";
+                for (int i = 0; i < typeArguments.length; i++) {
+                    Type typeArgument = typeArguments[i];
+                    if (typeArgument instanceof Class) {
+                        Class typeArgumentClass = (Class) typeArgument;
+                        genericType += (i==0 ? "" : ", ") + "? extends " + typeArgumentClass.getName();
+                    }
+                }
+
+                fieldType = ((Class) rawType).getName() + "<" + genericType + ">";
+            }
+        }
+
+        if (fieldType == null) {
+            fieldType = "Object";
+        }
+
+        javaWriter.beginMethod(matcherClassName, methodName, of(PUBLIC), fieldType, "expectedValue");
+        javaWriter.emitStatement("registerFieldMatcher(FieldName.%s.name(), IsEqual.equalTo(expectedValue))", fieldName);
+        javaWriter.emitStatement("return this");
+        javaWriter.endMethod().emitEmptyLine();
+    }
+
+    private static void writeWithMatcherMethodForField(JavaWriter javaWriter, String matcherClassName, String fieldName, Type fieldGenericType) throws IOException {
+        String methodName = "with" + capitalize(fieldName);
+
+        String matcherType = null;
+        if (fieldGenericType instanceof Class) {
+            Class fieldClass = (Class) fieldGenericType;
+            matcherType = "? super " + Primitives.wrap(fieldClass).getName();
+        } else if (fieldGenericType instanceof ParameterizedType) {
+            ParameterizedType fieldClass = (ParameterizedType) fieldGenericType;
+            Type rawType = fieldClass.getRawType();
+            if (rawType instanceof Class) {
+                matcherType = "? super " + ((Class) rawType).getName() + "<Object>";
+            }
+        }
+
+        if (matcherType == null) {
+            matcherType = "Object";
+        }
+
+        javaWriter.beginMethod(matcherClassName, methodName, of(PUBLIC), "Matcher<" + matcherType + ">", "matcher");
+        javaWriter.emitStatement("registerFieldMatcher(FieldName.%s.name(), matcher)", fieldName);
+        javaWriter.emitStatement("return this");
+        javaWriter.endMethod().emitEmptyLine();
+    }
+
+    private static void writeClassFooter(JavaWriter javaWriter) throws IOException {
+        javaWriter.endType();
+    }
 }
