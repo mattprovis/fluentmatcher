@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import static java.util.Arrays.asList;
 import static java.util.EnumSet.of;
 import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.PUBLIC;
@@ -46,6 +47,11 @@ public class FluentMatcherGenerator {
 
             writeWithValueMethodForField(javaWriter, matcherClassName, field);
             writeWithMatcherMethodForField(javaWriter, matcherClassName, field);
+
+            if (asList(Boolean.class, boolean.class)
+                    .contains(field.getType())) {
+                writeIsAndIsNotMethodsForBooleanField(javaWriter, matcherClassName, field);
+            }
         }
 
         writeClassFooter(javaWriter);
@@ -178,6 +184,22 @@ public class FluentMatcherGenerator {
 
         javaWriter.beginMethod(matcherClassName, methodName, of(PUBLIC), "Matcher<" + matcherType + ">", "matcher");
         javaWriter.emitStatement("registerFieldMatcher(FieldName.%s.name(), matcher)", fieldName);
+        javaWriter.emitStatement("return this");
+        javaWriter.endMethod().emitEmptyLine();
+    }
+
+    private static void writeIsAndIsNotMethodsForBooleanField(JavaWriter javaWriter, String matcherClassName, Field field) throws IOException {
+        String fieldName = field.getName();
+
+        String methodName = "is" + capitalize(fieldName);
+        javaWriter.beginMethod(matcherClassName, methodName, of(PUBLIC));
+        javaWriter.emitStatement("registerFieldMatcher(FieldName.%s.name(), IsEqual.equalTo(true))", fieldName);
+        javaWriter.emitStatement("return this");
+        javaWriter.endMethod().emitEmptyLine();
+
+        methodName = "isNot" + capitalize(fieldName);
+        javaWriter.beginMethod(matcherClassName, methodName, of(PUBLIC));
+        javaWriter.emitStatement("registerFieldMatcher(FieldName.%s.name(), IsEqual.equalTo(false))", fieldName);
         javaWriter.emitStatement("return this");
         javaWriter.endMethod().emitEmptyLine();
     }

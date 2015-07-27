@@ -19,6 +19,11 @@ public class FluentMatcherGeneratorTest {
         List<String> stringsList;
     }
 
+    private static class ExampleWithBoolean {
+        boolean okay;
+        Boolean good;
+    }
+
     @Test
     public void shouldSupportArrays() throws Exception {
         StringWriter stringWriter = new StringWriter();
@@ -37,6 +42,13 @@ public class FluentMatcherGeneratorTest {
     public void shouldSupportLists() throws Exception {
         StringWriter stringWriter = new StringWriter();
         FluentMatcherGenerator.generateMatcherFor(ExampleWithList.class, stringWriter);
+//        System.out.println(stringWriter.toString());
+    }
+
+    @Test
+    public void shouldSupportBooleansWithIsMethods() throws Exception {
+        StringWriter stringWriter = new StringWriter();
+        FluentMatcherGenerator.generateMatcherFor(ExampleWithBoolean.class, stringWriter);
 //        System.out.println(stringWriter.toString());
     }
 }

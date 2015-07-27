@@ -1,6 +1,5 @@
 package com.mattprovis.fluentmatcher.demo;
 
-import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import static com.mattprovis.fluentmatcher.demo.CarMatcher.car;
@@ -9,9 +8,6 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.arrayContaining;
-import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
-import static org.hamcrest.Matchers.arrayWithSize;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItemInArray;
 import static org.hamcrest.core.Is.is;
@@ -37,13 +33,19 @@ public class CarTest {
     @Test
     public void shouldMatchAComplexCondition() throws Exception {
         assertThat(actualCar, is(car()
-                .withRegistration(startsWith("ABC"))
-                .withTopSpeed(greaterThan(100))
-                .withGears(hasItemInArray("D"))
-                ));
+                        .withRegistration(startsWith("ABC"))
+                        .withTopSpeed(greaterThan(100))
+                        .withGears(hasItemInArray("D"))
+        ));
+    }
 
-        assertThat(actualCar, is(car()
-                .withPassengers(hasItem(passenger().withDriver(true)))));
+    @Test
+    public void shouldSupportSimplifiedBooleans() throws Exception {
+    assertThat(actualCar, is(car()
+                .withPassengers(hasItem(passenger().isDriver()))));
+
+    assertThat(actualCar, is(car()
+                .withPassengers(hasItem(passenger().isNotDriver()))));
     }
 
     @Test
