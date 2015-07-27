@@ -29,7 +29,8 @@
                     <execution>
                         <configuration>
                             <pojos>
-                                <pojo>com.mattprovis.fluentmatcher.demo.Example</pojo>
+                                <pojo>com.mattprovis.fluentmatcher.demo.Car</pojo>
+                                <pojo>com.mattprovis.fluentmatcher.demo.Passenger</pojo>
                             </pojos>
                         </configuration>
                         <goals>
@@ -44,7 +45,7 @@
 
         <dependency>
             <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-core</artifactId>
+            <artifactId>hamcrest-all</artifactId>
             <version>1.3</version>
             <scope>test</scope>
         </dependency>

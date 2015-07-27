@@ -43,29 +43,36 @@ public class FluentMatcherGenerator {
         writeStaticFactoryMethod(javaWriter, beanClassName, matcherClassName);
 
         for (Field field : fields) {
-            String fieldName = field.getName();
-            Type fieldGenericType = field.getGenericType();
 
-            writeWithValueMethodForField(javaWriter, matcherClassName, fieldName, fieldGenericType);
-            writeWithMatcherMethodForField(javaWriter, matcherClassName, fieldName, fieldGenericType);
+            writeWithValueMethodForField(javaWriter, matcherClassName, field);
+            writeWithMatcherMethodForField(javaWriter, matcherClassName, field);
         }
 
         writeClassFooter(javaWriter);
     }
 
     private static Class[] getImports(List<Field> fields) {
-        HashSet<Class> imports = new HashSet<>();
+        HashSet<Class<?>> imports = new HashSet<>();
         imports.add(FluentMatcher.class);
         imports.add(Matcher.class);
         imports.add(IsEqual.class);
 
         for (Field field : fields) {
-            Class<?> type = field.getType();
-            if (!type.isPrimitive()) {
-                imports.add(type);
-            }
+            addTypeImports(field.getType(), imports);
         }
         return imports.toArray(new Class[imports.size()]);
+    }
+
+    private static void addTypeImports(Class<?> type, HashSet<Class<?>> imports) {
+        if (type.isArray()) {
+            addTypeImports(type.getComponentType(), imports);
+            return;
+        }
+
+        if (!type.isPrimitive()) {
+            imports.add(type);
+            return;
+        }
     }
 
     private static void writeClassDeclaration(JavaWriter javaWriter, Class<?> beanClass, String beanClassName, String matcherClassName, Class[] imports) throws IOException {
@@ -106,11 +113,15 @@ public class FluentMatcherGenerator {
                 .emitEmptyLine();
     }
 
-    private static void writeWithValueMethodForField(JavaWriter javaWriter, String matcherClassName, String fieldName, Type fieldGenericType) throws IOException {
+    private static void writeWithValueMethodForField(JavaWriter javaWriter, String matcherClassName, Field field) throws IOException {
+        String fieldName = field.getName();
         String methodName = "with" + capitalize(fieldName);
 
         String fieldType = null;
-        if (fieldGenericType instanceof Class) {
+        Type fieldGenericType = field.getGenericType();
+        if (field.getType().isArray()) {
+            fieldType = field.getType().getCanonicalName();
+        } else if (fieldGenericType instanceof Class) {
             Class fieldClass = (Class) fieldGenericType;
             fieldType = Primitives.wrap(fieldClass).getName();
         } else if (fieldGenericType instanceof ParameterizedType) {
@@ -124,7 +135,7 @@ public class FluentMatcherGenerator {
                     Type typeArgument = typeArguments[i];
                     if (typeArgument instanceof Class) {
                         Class typeArgumentClass = (Class) typeArgument;
-                        genericType += (i==0 ? "" : ", ") + "? extends " + typeArgumentClass.getName();
+                        genericType += (i == 0 ? "" : ", ") + "? extends " + typeArgumentClass.getName();
                     }
                 }
 
@@ -142,11 +153,15 @@ public class FluentMatcherGenerator {
         javaWriter.endMethod().emitEmptyLine();
     }
 
-    private static void writeWithMatcherMethodForField(JavaWriter javaWriter, String matcherClassName, String fieldName, Type fieldGenericType) throws IOException {
+    private static void writeWithMatcherMethodForField(JavaWriter javaWriter, String matcherClassName, Field field) throws IOException {
+        String fieldName = field.getName();
         String methodName = "with" + capitalize(fieldName);
 
         String matcherType = null;
-        if (fieldGenericType instanceof Class) {
+        Type fieldGenericType = field.getGenericType();
+        if (field.getType().isArray()) {
+            matcherType = field.getType().getCanonicalName();
+        } else if (fieldGenericType instanceof Class) {
             Class fieldClass = (Class) fieldGenericType;
             matcherType = "? super " + Primitives.wrap(fieldClass).getName();
         } else if (fieldGenericType instanceof ParameterizedType) {
