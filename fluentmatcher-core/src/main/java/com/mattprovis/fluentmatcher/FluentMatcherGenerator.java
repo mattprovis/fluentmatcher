@@ -9,10 +9,12 @@ import org.unitils.util.ReflectionUtils;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 
 import static java.util.Arrays.asList;
@@ -34,6 +36,7 @@ public class FluentMatcherGenerator {
         String matcherClassName = beanClassName + "Matcher";
 
         List<Field> fields = new ArrayList<>(ReflectionUtils.getAllFields(beanClass));
+        filterRelevantFields(fields);
 
         writeClassDeclaration(javaWriter, beanClass, beanClassName, matcherClassName, getImports(fields));
 
@@ -55,6 +58,23 @@ public class FluentMatcherGenerator {
         }
 
         writeClassFooter(javaWriter);
+    }
+
+    /**
+     * Filters out fields for which we don't want matcher methods created.
+     * This currently only excludes static fields.
+     *
+     * @param fields
+     */
+    private static void filterRelevantFields(List<Field> fields) {
+        Iterator<Field> fieldIterator = fields.iterator();
+
+        while (fieldIterator.hasNext()) {
+            Field field = fieldIterator.next();
+            if (Modifier.isStatic(field.getModifiers())) {
+                fieldIterator.remove();
+            }
+        }
     }
 
     private static Class[] getImports(List<Field> fields) {
