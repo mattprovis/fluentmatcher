@@ -8,6 +8,11 @@
     <artifactId>fluentmatcher-maven-plugin</artifactId>
     <version>0.1-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
+    <parent>
+        <groupId>com.mattprovis</groupId>
+        <artifactId>fluentmatcher</artifactId>
+        <version>0.1-SNAPSHOT</version>
+    </parent>
 
     <build>
         <plugins>
