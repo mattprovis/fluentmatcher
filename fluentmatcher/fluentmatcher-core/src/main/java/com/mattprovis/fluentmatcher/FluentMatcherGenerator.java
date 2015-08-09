@@ -27,33 +27,42 @@ import static org.apache.commons.lang3.StringUtils.uncapitalize;
 
 public class FluentMatcherGenerator {
 
-    private FluentMatcherGenerator() { }
+    private final Class<?> beanClass;
+    private final JavaWriter javaWriter;
+    private final String beanClassName;
+    private final String matcherClassName;
 
-    public static void generateMatcherFor(Class<?> beanClass, Writer out) throws IOException {
-        JavaWriter javaWriter = new JavaWriter(out);
+    public FluentMatcherGenerator(Class<?> beanClass, Writer writer) {
 
-        String beanClassName = beanClass.getSimpleName();
-        String matcherClassName = beanClassName + "Matcher";
+        this.beanClass = beanClass;
+
+        javaWriter = new JavaWriter(writer);
+
+        beanClassName = beanClass.getSimpleName();
+        matcherClassName = beanClassName + "Matcher";
+    }
+
+    public void generateMatcher() throws IOException {
 
         List<Field> fields = new ArrayList<>(ReflectionUtils.getAllFields(beanClass));
         filterRelevantFields(fields);
 
-        writeClassDeclaration(javaWriter, beanClass, beanClassName, matcherClassName, getImports(fields));
+        writeClassDeclaration(getImports(fields));
 
-        writeFieldsEnum(javaWriter, fields);
+        writeFieldsEnum(fields);
 
-        writeConstructor(javaWriter, beanClassName);
+        writeConstructor();
 
-        writeStaticFactoryMethod(javaWriter, beanClassName, matcherClassName);
+        writeStaticFactoryMethod();
 
         for (Field field : fields) {
 
-            writeWithValueMethodForField(javaWriter, matcherClassName, field);
-            writeWithMatcherMethodForField(javaWriter, matcherClassName, field);
+            writeWithValueMethodForField(field);
+            writeWithMatcherMethodForField(field);
 
             if (asList(Boolean.class, boolean.class)
                     .contains(field.getType())) {
-                writeIsAndIsNotMethodsForBooleanField(javaWriter, matcherClassName, field);
+                writeIsAndIsNotMethodsForBooleanField(field);
             }
         }
 
@@ -66,7 +75,7 @@ public class FluentMatcherGenerator {
      *
      * @param fields
      */
-    private static void filterRelevantFields(List<Field> fields) {
+    private void filterRelevantFields(List<Field> fields) {
         Iterator<Field> fieldIterator = fields.iterator();
 
         while (fieldIterator.hasNext()) {
@@ -77,7 +86,7 @@ public class FluentMatcherGenerator {
         }
     }
 
-    private static Class[] getImports(List<Field> fields) {
+    private Class[] getImports(List<Field> fields) {
         HashSet<Class<?>> imports = new HashSet<>();
         imports.add(FluentMatcher.class);
         imports.add(Matcher.class);
@@ -89,7 +98,7 @@ public class FluentMatcherGenerator {
         return imports.toArray(new Class[imports.size()]);
     }
 
-    private static void addTypeImports(Class<?> type, HashSet<Class<?>> imports) {
+    private void addTypeImports(Class<?> type, HashSet<Class<?>> imports) {
         if (type.isArray()) {
             addTypeImports(type.getComponentType(), imports);
             return;
@@ -101,7 +110,7 @@ public class FluentMatcherGenerator {
         }
     }
 
-    private static void writeClassDeclaration(JavaWriter javaWriter, Class<?> beanClass, String beanClassName, String matcherClassName, Class[] imports) throws IOException {
+    private void writeClassDeclaration(Class[] imports) throws IOException {
         String extendsType = FluentMatcher.class.getSimpleName() + "<" + beanClassName + ">";
         javaWriter
                 .emitPackage(beanClass.getPackage().getName())
@@ -111,7 +120,7 @@ public class FluentMatcherGenerator {
                 .emitEmptyLine();
     }
 
-    private static void writeFieldsEnum(JavaWriter javaWriter, List<Field> fields) throws IOException {
+    private void writeFieldsEnum(List<Field> fields) throws IOException {
         javaWriter
                 .beginType("FieldName", "enum", of(PRIVATE));
 
@@ -125,13 +134,13 @@ public class FluentMatcherGenerator {
                 .emitEmptyLine();
     }
 
-    private static void writeConstructor(JavaWriter javaWriter, String beanClassName) throws IOException {
+    private void writeConstructor() throws IOException {
         javaWriter
                 .beginConstructor(of(PRIVATE)).emitStatement("super(%s.class)", beanClassName).endConstructor()
                 .emitEmptyLine();
     }
 
-    private static void writeStaticFactoryMethod(JavaWriter javaWriter, String beanClassName, String matcherClassName) throws IOException {
+    private void writeStaticFactoryMethod() throws IOException {
         javaWriter
                 .beginMethod(matcherClassName, uncapitalize(beanClassName), of(PUBLIC, STATIC))
                 .emitStatement("return new %s()", matcherClassName)
@@ -139,7 +148,7 @@ public class FluentMatcherGenerator {
                 .emitEmptyLine();
     }
 
-    private static void writeWithValueMethodForField(JavaWriter javaWriter, String matcherClassName, Field field) throws IOException {
+    private void writeWithValueMethodForField(Field field) throws IOException {
         String fieldName = field.getName();
         String methodName = "with" + capitalize(fieldName);
 
@@ -179,7 +188,7 @@ public class FluentMatcherGenerator {
         javaWriter.endMethod().emitEmptyLine();
     }
 
-    private static void writeWithMatcherMethodForField(JavaWriter javaWriter, String matcherClassName, Field field) throws IOException {
+    private void writeWithMatcherMethodForField(Field field) throws IOException {
         String fieldName = field.getName();
         String methodName = "with" + capitalize(fieldName);
 
@@ -208,7 +217,7 @@ public class FluentMatcherGenerator {
         javaWriter.endMethod().emitEmptyLine();
     }
 
-    private static void writeIsAndIsNotMethodsForBooleanField(JavaWriter javaWriter, String matcherClassName, Field field) throws IOException {
+    private void writeIsAndIsNotMethodsForBooleanField(Field field) throws IOException {
         String fieldName = field.getName();
 
         String methodName = "is" + capitalize(fieldName);
@@ -224,7 +233,7 @@ public class FluentMatcherGenerator {
         javaWriter.endMethod().emitEmptyLine();
     }
 
-    private static void writeClassFooter(JavaWriter javaWriter) throws IOException {
+    private void writeClassFooter(JavaWriter javaWriter) throws IOException {
         javaWriter.endType();
     }
 }

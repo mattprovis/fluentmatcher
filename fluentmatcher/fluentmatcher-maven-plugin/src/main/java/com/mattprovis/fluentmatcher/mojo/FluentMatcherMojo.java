@@ -94,7 +94,8 @@ public class FluentMatcherMojo extends AbstractMojo {
         Files.deleteIfExists(matcherClassPath);
         Files.createDirectories(packagePath);
         try (Writer writer = new FileWriter(matcherClassPath.toFile())) {
-            FluentMatcherGenerator.generateMatcherFor(pojoClass, writer);
+            FluentMatcherGenerator fluentMatcherGenerator = new FluentMatcherGenerator(pojoClass, writer);
+            fluentMatcherGenerator.generateMatcher();
         }
         getLog().info("Generated matcher: " + matcherClassPath.toAbsolutePath());
     }
