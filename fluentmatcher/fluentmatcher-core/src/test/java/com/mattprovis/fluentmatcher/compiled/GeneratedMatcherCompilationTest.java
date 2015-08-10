@@ -9,6 +9,7 @@ import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 
 import static com.mattprovis.fluentmatcher.util.compilation.Compiler.compileClassFromSource;
+import static org.apache.commons.lang3.StringUtils.uncapitalize;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -50,8 +51,7 @@ public class GeneratedMatcherCompilationTest {
     }
 
     private FluentMatcher instantiateUsingStaticFactoryMethod(Class<?> pojoClass, Class<?> compiledClass) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-        String pojoClassName = pojoClass.getSimpleName();
-        String matcherStaticFactoryMethod = Character.toLowerCase(pojoClassName.charAt(0)) + pojoClassName.substring(1);
+        String matcherStaticFactoryMethod = uncapitalize(pojoClass.getSimpleName());
         return (FluentMatcher) compiledClass.getMethod(matcherStaticFactoryMethod).invoke(null);
     }
 
