@@ -1,5 +1,10 @@
 package com.mattprovis.fluentmatcher;
 
+import com.mattprovis.fluentmatcher.compiled.Example;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeUtils;
+import org.joda.time.DateTimeZone;
+import org.junit.After;
 import org.junit.Test;
 
 import java.io.StringWriter;
@@ -29,39 +34,62 @@ public class FluentMatcherGeneratorTest {
 
     private StringWriter stringWriter = new StringWriter();
 
+    @After
+    public void tearDown() throws Exception {
+        DateTimeUtils.setCurrentMillisSystem();
+    }
+
     @Test
     public void shouldSupportPrimitives() throws Exception {
         new FluentMatcherGenerator(ExampleWithPrimitive.class, stringWriter).generateMatcher();
-        assertThat(stringWriter.toString(), containsString("public ExampleWithPrimitiveMatcher withAnInt(Integer expectedValue)"));
-        assertThat(stringWriter.toString(), containsString("public ExampleWithPrimitiveMatcher withAnInt(Matcher<? super Integer> matcher)"));
+        String generatedSource = stringWriter.toString();
+
+        assertThat(generatedSource, containsString("public ExampleWithPrimitiveMatcher withAnInt(Integer expectedValue)"));
+        assertThat(generatedSource, containsString("public ExampleWithPrimitiveMatcher withAnInt(Matcher<? super Integer> matcher)"));
     }
 
     @Test
     public void shouldSupportArrays() throws Exception {
         new FluentMatcherGenerator(ExampleWithArray.class, stringWriter).generateMatcher();
-        assertThat(stringWriter.toString(), containsString("public ExampleWithArrayMatcher withIntArray(int[] expectedValue)"));
-        assertThat(stringWriter.toString(), containsString("public ExampleWithArrayMatcher withIntArray(Matcher<int[]> matcher)"));
+        String generatedSource = stringWriter.toString();
+
+        assertThat(generatedSource, containsString("public ExampleWithArrayMatcher withIntArray(int[] expectedValue)"));
+        assertThat(generatedSource, containsString("public ExampleWithArrayMatcher withIntArray(Matcher<int[]> matcher)"));
     }
 
     @Test
     public void shouldSupportLists() throws Exception {
         new FluentMatcherGenerator(ExampleWithList.class, stringWriter).generateMatcher();
-        assertThat(stringWriter.toString(), containsString("public ExampleWithListMatcher withStringsList(List<? extends String> expectedValue)"));
-        assertThat(stringWriter.toString(), containsString("public ExampleWithListMatcher withStringsList(Matcher<? super List<Object>> matcher)"));
+        String generatedSource = stringWriter.toString();
+
+        assertThat(generatedSource, containsString("public ExampleWithListMatcher withStringsList(List<? extends String> expectedValue)"));
+        assertThat(generatedSource, containsString("public ExampleWithListMatcher withStringsList(Matcher<? super List<Object>> matcher)"));
     }
 
     @Test
     public void shouldSupportBooleansWithAdditionalMethods() throws Exception {
         new FluentMatcherGenerator(ExampleWithBoolean.class, stringWriter).generateMatcher();
+        String generatedSource = stringWriter.toString();
 
-        assertThat(stringWriter.toString(), containsString("public ExampleWithBooleanMatcher withOkay(Boolean expectedValue)"));
-        assertThat(stringWriter.toString(), containsString("public ExampleWithBooleanMatcher isOkay()"));
-        assertThat(stringWriter.toString(), containsString("public ExampleWithBooleanMatcher isNotOkay()"));
-        assertThat(stringWriter.toString(), containsString("public ExampleWithBooleanMatcher withOkay(Matcher<? super Boolean> matcher)"));
+        assertThat(generatedSource, containsString("public ExampleWithBooleanMatcher withOkay(Boolean expectedValue)"));
+        assertThat(generatedSource, containsString("public ExampleWithBooleanMatcher isOkay()"));
+        assertThat(generatedSource, containsString("public ExampleWithBooleanMatcher isNotOkay()"));
+        assertThat(generatedSource, containsString("public ExampleWithBooleanMatcher withOkay(Matcher<? super Boolean> matcher)"));
 
-        assertThat(stringWriter.toString(), containsString("public ExampleWithBooleanMatcher withGood(Boolean expectedValue)"));
-        assertThat(stringWriter.toString(), containsString("public ExampleWithBooleanMatcher isGood()"));
-        assertThat(stringWriter.toString(), containsString("public ExampleWithBooleanMatcher isNotGood()"));
-        assertThat(stringWriter.toString(), containsString("public ExampleWithBooleanMatcher withGood(Matcher<? super Boolean> matcher)"));
+        assertThat(generatedSource, containsString("public ExampleWithBooleanMatcher withGood(Boolean expectedValue)"));
+        assertThat(generatedSource, containsString("public ExampleWithBooleanMatcher isGood()"));
+        assertThat(generatedSource, containsString("public ExampleWithBooleanMatcher isNotGood()"));
+        assertThat(generatedSource, containsString("public ExampleWithBooleanMatcher withGood(Matcher<? super Boolean> matcher)"));
+    }
+
+    @Test
+    public void shouldIncludeGeneratedAnnotation() throws Exception {
+        DateTimeUtils.setCurrentMillisFixed(new DateTime(2015, 8, 12, 10, 33, 0, 0, DateTimeZone.forOffsetHours(10)).getMillis());
+
+        new FluentMatcherGenerator(Example.class, stringWriter).generateMatcher();
+        String generatedSource = stringWriter.toString();
+
+        assertThat(generatedSource, containsString("@Generated(value = \"com.mattprovis.fluentmatcher.FluentMatcherGenerator\", date = \"2015-08-12T10:33:00.000+10:00\")"));
+
     }
 }

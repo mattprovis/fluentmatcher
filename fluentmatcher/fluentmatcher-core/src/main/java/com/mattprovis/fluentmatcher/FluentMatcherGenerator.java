@@ -6,6 +6,7 @@ import org.hamcrest.core.IsEqual;
 import org.unitils.util.CollectionUtils;
 import org.unitils.util.ReflectionUtils;
 
+import javax.annotation.Generated;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Field;
@@ -61,7 +62,7 @@ public class FluentMatcherGenerator {
 
     private Class[] withImportsFor(List<Field> fields) {
         Set<Class<?>> imports = CollectionUtils.<Class<?>>asSet(
-                FluentMatcher.class, Matcher.class, IsEqual.class);
+                FluentMatcher.class, Matcher.class, IsEqual.class, Generated.class);
 
         for (Field field : fields) {
             addTypeImports(field.getType(), imports);
