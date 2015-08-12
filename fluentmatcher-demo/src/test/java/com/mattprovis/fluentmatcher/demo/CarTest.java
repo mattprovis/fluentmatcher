@@ -52,4 +52,10 @@ public class CarTest {
     public void shouldNotMatch() throws Exception {
         assertThat(actualCar, car().withRegistration(not("XYZ-789")));
     }
+
+    @Test
+    public void shouldSupportMatchingBySuperclass() throws Exception {
+        SportsCar sportsCar = new SportsCar("ZOOM", 400, asList(new Passenger("Alice", true)), new String[]{"R", "N", "1", "2", "3", "4", "5", "6"});
+        assertThat(sportsCar, is(car()));
+    }
 }
