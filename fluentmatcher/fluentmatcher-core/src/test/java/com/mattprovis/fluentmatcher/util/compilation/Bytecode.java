@@ -6,22 +6,26 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 
-public class MemoryByteCode extends SimpleJavaFileObject {
-    private ByteArrayOutputStream baos;
-    public MemoryByteCode(String name) {
+public class Bytecode extends SimpleJavaFileObject {
+
+    private ByteArrayOutputStream byteStream;
+
+    public Bytecode(String name) {
         super(URI.create("byte:///" + name + ".class"), Kind.CLASS);
     }
+
+    @Override
     public CharSequence getCharContent(boolean ignoreEncodingErrors) {
         throw new IllegalStateException();
     }
+
+    @Override
     public OutputStream openOutputStream() {
-        baos = new ByteArrayOutputStream();
-        return baos;
+        byteStream = new ByteArrayOutputStream();
+        return byteStream;
     }
-    public InputStream openInputStream() {
-        throw new IllegalStateException();
-    }
+
     public byte[] getBytes() {
-        return baos.toByteArray();
+        return byteStream.toByteArray();
     }
 }

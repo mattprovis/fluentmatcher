@@ -80,7 +80,7 @@ public class FluentMatcherGenerator {
         }
     }
 
-    public void writeMatcherMethods(List<Field> fields) throws IOException {
+    private void writeMatcherMethods(List<Field> fields) throws IOException {
         for (Field field : fields) {
             MatcherMethodWriter matcherMethodWriter = new MatcherMethodWriter(javaWriter, matcherClassName, field);
             matcherMethodWriter.writeWithValueMethod();
