@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Mojo(name = "generate",
@@ -34,29 +35,37 @@ public class FluentMatcherMojo extends AbstractMojo {
     @Parameter(property = "pojos", required = true)
     private String[] pojos;
 
-    @Parameter(property = "sourceDestDir", defaultValue = "${project.build.directory}/generated-test-sources/fluentmatcher/")
+    @Parameter(property = "sourceDestDir", defaultValue = "${project.build.directory}/generated-test-sources/fluentmatcher")
     private String sourceDestDir;
+
+    private Path generatedJavaTestSourcesPath;
 
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject project;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        generatedJavaTestSourcesPath = Paths.get(sourceDestDir, "java");
+
+        getLog().debug("pojos: " + Arrays.toString(pojos));
+        getLog().debug("sourceDestDir: " + sourceDestDir);
+        getLog().debug("generatedJavaTestSourcesPath: " + generatedJavaTestSourcesPath.toAbsolutePath());
 
         if (pojos == null || pojos.length == 0) {
             throw new IllegalStateException("Expected parameter: pojos");
         }
 
         try {
-            Path generatedJavaTestSourcesPath = Paths.get(sourceDestDir, "java");
             project.addTestCompileSourceRoot(generatedJavaTestSourcesPath.toAbsolutePath().toString());
 
             for (Class<?> pojoClass : getPojoClasses(pojos)) {
+                getLog().info("Generating matcher for " + pojoClass.getCanonicalName());
                 generateMatcher(generatedJavaTestSourcesPath, pojoClass);
             }
-            copyFluentMatcherSuperclass(generatedJavaTestSourcesPath);
+            copyFluentMatcherSuperclass();
 
         } catch (IOException | DependencyResolutionRequiredException | ClassNotFoundException e) {
+            getLog().error(e);
             throw new MojoExecutionException("", e);
         }
     }
@@ -97,14 +106,14 @@ public class FluentMatcherMojo extends AbstractMojo {
             FluentMatcherGenerator fluentMatcherGenerator = new FluentMatcherGenerator(pojoClass, writer);
             fluentMatcherGenerator.generateMatcher();
         }
-        getLog().info("Generated matcher: " + matcherClassPath.toAbsolutePath());
+        getLog().info("Successfully generated matcher: " + matcherClassPath.toAbsolutePath());
     }
 
-    public void copyFluentMatcherSuperclass(Path generatedJavaTestSourcesPath) throws IOException {
+    public void copyFluentMatcherSuperclass() throws IOException {
         InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream("resources/FluentMatcher.java");
         Path targetPath = generatedJavaTestSourcesPath.resolve("com/mattprovis/fluentmatcher/FluentMatcher.java");
+        getLog().info("Copying FluentMatcher superclass to " + targetPath.toAbsolutePath());
+        targetPath.toFile().getParentFile().mkdirs();
         Files.copy(resourceAsStream, targetPath, StandardCopyOption.REPLACE_EXISTING);
-
-        getLog().info("Copied FluentMatcher superclass to: " + targetPath);
     }
 }
