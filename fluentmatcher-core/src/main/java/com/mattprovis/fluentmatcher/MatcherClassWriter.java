@@ -2,6 +2,7 @@ package com.mattprovis.fluentmatcher;
 
 import com.squareup.javawriter.JavaWriter;
 import org.joda.time.DateTime;
+import org.joda.time.format.ISODateTimeFormat;
 
 import javax.annotation.Generated;
 import java.io.IOException;
@@ -31,7 +32,9 @@ public class MatcherClassWriter {
     public void writeClassDeclaration(Class[] imports) throws IOException {
         String extendsType = FluentMatcher.class.getSimpleName() + "<" + beanClassName + ">";
 
-        String generatedAnnotationAttributes = "value = \"" + FluentMatcherGenerator.class.getName() + "\", date = \"" + new DateTime().toString() + "\"";
+        String valueAttribute = "value = \"" + FluentMatcherGenerator.class.getName() + "\"";
+        String dateAttribute = "date = \"" + new DateTime().toString(ISODateTimeFormat.dateTime()) + "\"";
+        String generatedAnnotationAttributes = valueAttribute + ", " + dateAttribute;
 
         javaWriter
                 .emitPackage(beanClass.getPackage().getName())

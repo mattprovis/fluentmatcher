@@ -9,8 +9,12 @@ import org.junit.Test;
 
 import java.io.StringWriter;
 import java.util.List;
+import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 public class FluentMatcherGeneratorTest {
@@ -36,6 +40,7 @@ public class FluentMatcherGeneratorTest {
 
     @After
     public void tearDown() throws Exception {
+        DateTimeZone.setDefault(DateTimeZone.forTimeZone(TimeZone.getDefault()));
         DateTimeUtils.setCurrentMillisSystem();
     }
 
@@ -84,12 +89,33 @@ public class FluentMatcherGeneratorTest {
 
     @Test
     public void shouldIncludeGeneratedAnnotation() throws Exception {
-        DateTimeUtils.setCurrentMillisFixed(new DateTime(2015, 8, 12, 10, 33, 0, 0, DateTimeZone.forOffsetHours(10)).getMillis());
+        DateTimeZone.setDefault(DateTimeZone.forOffsetHours(10));
+        DateTimeUtils.setCurrentMillisFixed(new DateTime(2015, 8, 12, 10, 33, 0).getMillis());
 
         new FluentMatcherGenerator(Example.class, stringWriter).generateMatcher();
-        String generatedSource = stringWriter.toString();
 
-        assertThat(generatedSource, containsString("@Generated(value = \"com.mattprovis.fluentmatcher.FluentMatcherGenerator\", date = \"2015-08-12T10:33:00.000+10:00\")"));
+        String generatedAnnotationLine = getLineBeginningWith("@Generated", stringWriter.toString());
+        assertThat(generatedAnnotationLine, is("@Generated(value = \"com.mattprovis.fluentmatcher.FluentMatcherGenerator\", date = \"2015-08-12T10:33:00.000+10:00\")"));
+    }
 
+    @Test
+    public void generatedAnnotationDateShouldWorkInOtherTimezones() throws Exception {
+        DateTimeZone.setDefault(DateTimeZone.forOffsetHours(1));
+        DateTimeUtils.setCurrentMillisFixed(new DateTime(2015, 8, 12, 10, 33, 0).getMillis());
+
+        new FluentMatcherGenerator(Example.class, stringWriter).generateMatcher();
+
+        String generatedAnnotationLine = getLineBeginningWith("@Generated", stringWriter.toString());
+        assertThat(generatedAnnotationLine, containsString("\"2015-08-12T10:33:00.000+01:00\""));
+    }
+
+    private String getLineBeginningWith(String expectedPrefix, String lines) {
+        Pattern lineSearchPattern = Pattern.compile("\\s*(" + Pattern.quote(expectedPrefix) + ".*)");
+        Matcher m = lineSearchPattern.matcher(lines);
+        if (m.find()) {
+            return m.group(1);
+        }
+
+        return null;
     }
 }
