@@ -1,4 +1,4 @@
-package com.mattprovis.fluentmatcher.demo;
+package com.mattprovis.fluentmatcher;
 
 public class Passenger {
     private String name;

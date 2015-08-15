@@ -1,4 +1,4 @@
-package com.mattprovis.fluentmatcher.demo;
+package com.mattprovis.fluentmatcher;
 
 import java.util.List;
 
