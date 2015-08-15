@@ -1,16 +1,16 @@
 package com.mattprovis.fluentmatcher;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.hamcrest.Description;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.hamcrest.core.AllOf;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public abstract class FluentMatcher<BeanType> extends TypeSafeDiagnosingMatcher<BeanType> {
     protected Map<String, FeatureMatcher<BeanType, ?>> matchers = new TreeMap<>();
