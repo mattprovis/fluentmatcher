@@ -56,6 +56,7 @@ Fluentmatcher supports:
 * Match values in private fields, even without exposed getter methods
 * Convenient `isX()` and `isNotX()` for boolean fields
 * Matcher is recreated if the matched class changes
+* Java 7 and 8 compatible
 
 ## Usage
 
@@ -85,3 +86,7 @@ Add the plugin to your project's `pom.xml`, and list the classes for which you r
 The matchers will be generated when you next run Maven's `generate-test-sources` phase (which runs by default as part of the usual `install` process).
 
 The generated matcher classes are placed in your project's `target/generated-test-sources` directory and should automatically be visible to your IDE. There's no need to commit the matchers to your source control, as they'll be generated fresh each time.
+
+## Current build status
+
+Live build status for the master branch: [![Build Status](https://travis-ci.org/mattprovis/fluentmatcher.svg?branch=master)](https://travis-ci.org/mattprovis/fluentmatcher)
