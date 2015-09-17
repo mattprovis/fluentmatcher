@@ -20,6 +20,10 @@
         </repository>
     </distributionManagement>
 
+    <scm>
+        <connection>scm:git:git@github.com:mattprovis/fluentmatcher.git</connection>
+    </scm>
+
     <modules>
         <module>fluentmatcher-core</module>
         <module>fluentmatcher-maven-plugin</module>
