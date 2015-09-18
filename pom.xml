@@ -7,6 +7,12 @@
     <version>0.1.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <modules>
+        <module>fluentmatcher-core</module>
+        <module>fluentmatcher-maven-plugin</module>
+        <module>fluentmatcher-maven-plugin-test</module>
+    </modules>
+
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
@@ -18,22 +24,58 @@
         </repository>
     </distributionManagement>
 
-    <scm>
-        <connection>scm:git:git@github.com:mattprovis/fluentmatcher.git</connection>
-      <tag>v0.1.1</tag>
-  </scm>
-
-    <modules>
-        <module>fluentmatcher-core</module>
-        <module>fluentmatcher-maven-plugin</module>
-        <module>fluentmatcher-maven-plugin-test</module>
-    </modules>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <hamcrest.version>1.3</hamcrest.version>
         <maven.version>3.3.3</maven.version>
     </properties>
+
+    <name>Fluentmatcher</name>
+    <description>A maven plugin for generating JUnit/Hamcrest compatible matcher classes with a fluent style</description>
+    <url>https://github.com/mattprovis/fluentmatcher</url>
+
+    <developers>
+        <developer>
+            <name>Matthew Provis</name>
+            <email>matt@mattprovis.com</email>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git@github.com:mattprovis/fluentmatcher.git</connection>
+        <url>git@github.com:mattprovis/fluentmatcher.git</url>
+        <tag>v0.1.2</tag>
+    </scm>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <build>
         <pluginManagement>
@@ -50,12 +92,14 @@
                 <plugin>
                     <groupId>org.sonatype.plugins</groupId>
                     <artifactId>nexus-staging-maven-plugin</artifactId>
-                    <version>1.6.3</version>
+                    <version>1.6.6</version>
                     <extensions>true</extensions>
                     <configuration>
                         <serverId>ossrh</serverId>
                         <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                        <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        <skipStagingRepositoryClose>true</skipStagingRepositoryClose>
+                        <keepStagingRepositoryOnCloseRuleFailure>false</keepStagingRepositoryOnCloseRuleFailure>
+                        <autoReleaseAfterClose>false</autoReleaseAfterClose>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -71,14 +115,8 @@
                         <autoVersionSubmodules>true</autoVersionSubmodules>
                         <pushChanges>false</pushChanges>
                         <localCheckout>true</localCheckout>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>2.8.2</version>
-                    <configuration>
-                        <skip>true</skip>
+                        <releaseProfiles>release</releaseProfiles>
+                        <tagNameFormat>v@{version}</tagNameFormat>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -106,6 +144,15 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <configuration>
+                    <skipNexusStagingDeployMojo>false</skipNexusStagingDeployMojo>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
     <dependencyManagement>
