@@ -24,7 +24,13 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
-
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <configuration>
+                    <skipNexusStagingDeployMojo>false</skipNexusStagingDeployMojo> <!-- Should really be skipped, but nexus-staging-maven-plugin requires the last executed module to not be skipped. -->
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>com.mattprovis</groupId>
                 <artifactId>fluentmatcher-maven-plugin</artifactId>
