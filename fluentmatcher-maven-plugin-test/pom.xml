@@ -41,6 +41,7 @@
                             <pojos>
                                 <pojo>com.mattprovis.fluentmatcher.Car</pojo>
                                 <pojo>com.mattprovis.fluentmatcher.Passenger</pojo>
+                                <pojo>junit.framework.TestResult</pojo>
                             </pojos>
                         </configuration>
                         <goals>

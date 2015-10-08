@@ -1,10 +1,12 @@
 package com.mattprovis.fluentmatcher;
 
+import junit.framework.TestResult;
 import org.junit.Test;
 
 import static com.mattprovis.fluentmatcher.CarMatcher.car;
 import static com.mattprovis.fluentmatcher.PassengerMatcher.passenger;
 import static java.util.Arrays.asList;
+import static junit.framework.TestResultMatcher.testResult;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItemInArray;
 import static org.hamcrest.core.Is.is;
@@ -90,5 +92,11 @@ public class FluentMatcherMavenPluginTest {
     public void shouldSupportMatchingBySuperclass() throws Exception {
         SportsCar sportsCar = new SportsCar("ZOOM", 400, asList(alice), new String[]{"R", "N", "1", "2", "3", "4", "5", "6"});
         assertThat(sportsCar, is(car()));
+    }
+
+    @Test
+    public void shouldSupportPojoClassesInTestScope() throws Exception {
+        TestResult testScopedObject = new TestResult();
+        assertThat(testScopedObject, is(testResult()));
     }
 }
