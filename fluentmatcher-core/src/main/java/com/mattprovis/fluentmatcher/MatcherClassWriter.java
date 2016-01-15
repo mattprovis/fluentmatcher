@@ -10,7 +10,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import static java.util.EnumSet.of;
-import static javax.lang.model.element.Modifier.PRIVATE;
+import static javax.lang.model.element.Modifier.PROTECTED;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
 import static org.apache.commons.lang3.StringUtils.uncapitalize;
@@ -47,7 +47,7 @@ public class MatcherClassWriter {
 
     public void writeFieldsEnum(List<Field> fields) throws IOException {
         javaWriter
-                .beginType("FieldName", "enum", of(PRIVATE));
+                .beginType("FieldName", "enum", of(PROTECTED));
 
         for (int i = 0; i < fields.size(); i++) {
             Field field = fields.get(i);
@@ -61,7 +61,7 @@ public class MatcherClassWriter {
 
     public void writeConstructor() throws IOException {
         javaWriter
-                .beginConstructor(of(PRIVATE)).emitStatement("super(%s.class)", beanClassName).endConstructor()
+                .beginConstructor(of(PROTECTED)).emitStatement("super(%s.class)", beanClassName).endConstructor()
                 .emitEmptyLine();
     }
 

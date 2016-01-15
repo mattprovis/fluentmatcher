@@ -49,8 +49,8 @@ public class FluentMatcherGeneratorTest {
         new FluentMatcherGenerator(ExampleWithPrimitive.class, stringWriter).generateMatcher();
         String generatedSource = stringWriter.toString();
 
-        assertThat(generatedSource, containsString("public ExampleWithPrimitiveMatcher withAnInt(Integer expectedValue)"));
-        assertThat(generatedSource, containsString("public ExampleWithPrimitiveMatcher withAnInt(Matcher<? super Integer> matcher)"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithPrimitiveMatcher> SubclassOfMatcher withAnInt(Integer expectedValue)"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithPrimitiveMatcher> SubclassOfMatcher withAnInt(Matcher<? super Integer> matcher)"));
     }
 
     @Test
@@ -58,8 +58,8 @@ public class FluentMatcherGeneratorTest {
         new FluentMatcherGenerator(ExampleWithArray.class, stringWriter).generateMatcher();
         String generatedSource = stringWriter.toString();
 
-        assertThat(generatedSource, containsString("public ExampleWithArrayMatcher withIntArray(int[] expectedValue)"));
-        assertThat(generatedSource, containsString("public ExampleWithArrayMatcher withIntArray(Matcher<int[]> matcher)"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithArrayMatcher> SubclassOfMatcher withIntArray(int[] expectedValue)"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithArrayMatcher> SubclassOfMatcher withIntArray(Matcher<int[]> matcher)"));
     }
 
     @Test
@@ -67,8 +67,8 @@ public class FluentMatcherGeneratorTest {
         new FluentMatcherGenerator(ExampleWithList.class, stringWriter).generateMatcher();
         String generatedSource = stringWriter.toString();
 
-        assertThat(generatedSource, containsString("public ExampleWithListMatcher withStringsList(List<? extends String> expectedValue)"));
-        assertThat(generatedSource, containsString("public ExampleWithListMatcher withStringsList(Matcher<? super List<Object>> matcher)"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithListMatcher> SubclassOfMatcher withStringsList(List<? extends String> expectedValue)"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithListMatcher> SubclassOfMatcher withStringsList(Matcher<? super List<Object>> matcher)"));
     }
 
     @Test
@@ -76,15 +76,15 @@ public class FluentMatcherGeneratorTest {
         new FluentMatcherGenerator(ExampleWithBoolean.class, stringWriter).generateMatcher();
         String generatedSource = stringWriter.toString();
 
-        assertThat(generatedSource, containsString("public ExampleWithBooleanMatcher withOkay(Boolean expectedValue)"));
-        assertThat(generatedSource, containsString("public ExampleWithBooleanMatcher isOkay()"));
-        assertThat(generatedSource, containsString("public ExampleWithBooleanMatcher isNotOkay()"));
-        assertThat(generatedSource, containsString("public ExampleWithBooleanMatcher withOkay(Matcher<? super Boolean> matcher)"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithBooleanMatcher> SubclassOfMatcher withOkay(Boolean expectedValue)"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithBooleanMatcher> SubclassOfMatcher isOkay()"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithBooleanMatcher> SubclassOfMatcher isNotOkay()"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithBooleanMatcher> SubclassOfMatcher withOkay(Matcher<? super Boolean> matcher)"));
 
-        assertThat(generatedSource, containsString("public ExampleWithBooleanMatcher withGood(Boolean expectedValue)"));
-        assertThat(generatedSource, containsString("public ExampleWithBooleanMatcher isGood()"));
-        assertThat(generatedSource, containsString("public ExampleWithBooleanMatcher isNotGood()"));
-        assertThat(generatedSource, containsString("public ExampleWithBooleanMatcher withGood(Matcher<? super Boolean> matcher)"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithBooleanMatcher> SubclassOfMatcher withGood(Boolean expectedValue)"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithBooleanMatcher> SubclassOfMatcher isGood()"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithBooleanMatcher> SubclassOfMatcher isNotGood()"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithBooleanMatcher> SubclassOfMatcher withGood(Matcher<? super Boolean> matcher)"));
     }
 
     @Test

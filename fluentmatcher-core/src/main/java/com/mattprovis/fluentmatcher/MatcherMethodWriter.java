@@ -15,11 +15,11 @@ import static org.apache.commons.lang3.StringUtils.capitalize;
 public class MatcherMethodWriter {
     private JavaWriter javaWriter;
     private Field field;
-    private String matcherClassName;
+    private String matcherReturnType;
 
     public MatcherMethodWriter(JavaWriter javaWriter, String matcherClassName, Field field) {
         this.javaWriter = javaWriter;
-        this.matcherClassName = matcherClassName;
+        this.matcherReturnType = "<SubclassOfMatcher extends " + matcherClassName + "> SubclassOfMatcher";
         this.field = field;
     }
 
@@ -57,9 +57,9 @@ public class MatcherMethodWriter {
             fieldType = "Object";
         }
 
-        javaWriter.beginMethod(matcherClassName, methodName, of(PUBLIC), fieldType, "expectedValue");
+        javaWriter.beginMethod(matcherReturnType, methodName, of(PUBLIC), fieldType, "expectedValue");
         javaWriter.emitStatement("registerFieldMatcher(FieldName.%s.name(), IsEqual.equalTo(expectedValue))", fieldName);
-        javaWriter.emitStatement("return this");
+        javaWriter.emitStatement("return (SubclassOfMatcher) this");
         javaWriter.endMethod().emitEmptyLine();
     }
 
@@ -86,9 +86,9 @@ public class MatcherMethodWriter {
             matcherType = "Object";
         }
 
-        javaWriter.beginMethod(matcherClassName, methodName, of(PUBLIC), "Matcher<" + matcherType + ">", "matcher");
+        javaWriter.beginMethod(matcherReturnType, methodName, of(PUBLIC), "Matcher<" + matcherType + ">", "matcher");
         javaWriter.emitStatement("registerFieldMatcher(FieldName.%s.name(), matcher)", fieldName);
-        javaWriter.emitStatement("return this");
+        javaWriter.emitStatement("return (SubclassOfMatcher) this");
         javaWriter.endMethod().emitEmptyLine();
     }
 
@@ -97,15 +97,15 @@ public class MatcherMethodWriter {
             String fieldName = field.getName();
 
             String methodName = "is" + capitalize(fieldName);
-            javaWriter.beginMethod(matcherClassName, methodName, of(PUBLIC));
+            javaWriter.beginMethod(matcherReturnType, methodName, of(PUBLIC));
             javaWriter.emitStatement("registerFieldMatcher(FieldName.%s.name(), IsEqual.equalTo(true))", fieldName);
-            javaWriter.emitStatement("return this");
+            javaWriter.emitStatement("return (SubclassOfMatcher) this");
             javaWriter.endMethod().emitEmptyLine();
 
             methodName = "isNot" + capitalize(fieldName);
-            javaWriter.beginMethod(matcherClassName, methodName, of(PUBLIC));
+            javaWriter.beginMethod(matcherReturnType, methodName, of(PUBLIC));
             javaWriter.emitStatement("registerFieldMatcher(FieldName.%s.name(), IsEqual.equalTo(false))", fieldName);
-            javaWriter.emitStatement("return this");
+            javaWriter.emitStatement("return (SubclassOfMatcher) this");
             javaWriter.endMethod().emitEmptyLine();
         }
     }
