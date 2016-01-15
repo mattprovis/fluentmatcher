@@ -25,6 +25,7 @@ public class FluentMatcherGenerator {
 
     public FluentMatcherGenerator(Class<?> beanClass, Writer writer) {
         javaWriter = new JavaWriter(writer);
+        javaWriter.setIndent("    ");
         this.beanClass = beanClass;
         beanClassName = beanClass.getSimpleName();
         matcherClassName = beanClassName + "Matcher";
