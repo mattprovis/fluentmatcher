@@ -93,7 +93,9 @@ public class FluentMatcherMojo extends AbstractMojo {
     }
 
     private void generateMatcher(Path generatedJavaTestSourcesPath, Class<?> pojoClass) throws IOException {
-        String matcherClassName = pojoClass.getSimpleName() + "Matcher";
+
+        FluentMatcherGenerator fluentMatcherGenerator = new FluentMatcherGenerator(pojoClass);
+        String matcherClassName = fluentMatcherGenerator.getSimpleMatcherClassName();
 
         String packageDirs = pojoClass.getPackage().getName()
                 .replace('.', File.separatorChar);
@@ -103,8 +105,7 @@ public class FluentMatcherMojo extends AbstractMojo {
         Files.deleteIfExists(matcherClassPath);
         Files.createDirectories(packagePath);
         try (Writer writer = new FileWriter(matcherClassPath.toFile())) {
-            FluentMatcherGenerator fluentMatcherGenerator = new FluentMatcherGenerator(pojoClass, writer);
-            fluentMatcherGenerator.generateMatcher();
+            fluentMatcherGenerator.generateMatcher(writer);
         }
         getLog().info("Successfully generated matcher: " + matcherClassPath.toAbsolutePath());
     }

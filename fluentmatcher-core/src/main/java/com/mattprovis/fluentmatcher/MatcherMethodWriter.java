@@ -33,7 +33,7 @@ public class MatcherMethodWriter {
             fieldType = field.getType().getCanonicalName();
         } else if (fieldGenericType instanceof Class) {
             Class fieldClass = (Class) fieldGenericType;
-            fieldType = Primitives.wrap(fieldClass).getName();
+            fieldType = Primitives.wrap(fieldClass).getCanonicalName();
         } else if (fieldGenericType instanceof ParameterizedType) {
             ParameterizedType fieldClass = (ParameterizedType) fieldGenericType;
             Type rawType = fieldClass.getRawType();
@@ -45,11 +45,11 @@ public class MatcherMethodWriter {
                     Type typeArgument = typeArguments[i];
                     if (typeArgument instanceof Class) {
                         Class typeArgumentClass = (Class) typeArgument;
-                        genericType += (i == 0 ? "" : ", ") + "? extends " + typeArgumentClass.getName();
+                        genericType += (i == 0 ? "" : ", ") + "? extends " + typeArgumentClass.getCanonicalName();
                     }
                 }
 
-                fieldType = ((Class) rawType).getName() + "<" + genericType + ">";
+                fieldType = ((Class) rawType).getCanonicalName() + "<" + genericType + ">";
             }
         }
 
@@ -73,12 +73,12 @@ public class MatcherMethodWriter {
             matcherType = field.getType().getCanonicalName();
         } else if (fieldGenericType instanceof Class) {
             Class fieldClass = (Class) fieldGenericType;
-            matcherType = "? super " + Primitives.wrap(fieldClass).getName();
+            matcherType = "? super " + Primitives.wrap(fieldClass).getCanonicalName();
         } else if (fieldGenericType instanceof ParameterizedType) {
             ParameterizedType fieldClass = (ParameterizedType) fieldGenericType;
             Type rawType = fieldClass.getRawType();
             if (rawType instanceof Class) {
-                matcherType = "? super " + ((Class) rawType).getName() + "<Object>";
+                matcherType = "? super " + ((Class) rawType).getCanonicalName() + "<Object>";
             }
         }
 

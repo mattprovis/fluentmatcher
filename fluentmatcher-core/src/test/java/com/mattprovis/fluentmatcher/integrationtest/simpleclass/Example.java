@@ -1,4 +1,4 @@
-package com.mattprovis.fluentmatcher.compiled;
+package com.mattprovis.fluentmatcher.integrationtest.simpleclass;
 
 public class Example {
     private String message;

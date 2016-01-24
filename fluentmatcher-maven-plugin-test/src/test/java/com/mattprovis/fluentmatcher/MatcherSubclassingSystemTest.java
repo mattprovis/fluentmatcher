@@ -7,7 +7,7 @@ import java.util.Collections;
 import static org.hamcrest.Matchers.hasItemInArray;
 import static org.junit.Assert.assertThat;
 
-public class MatcherSubclassingTest {
+public class MatcherSubclassingSystemTest {
 
     private Car actualCar = new Car(
             "ABC-123",

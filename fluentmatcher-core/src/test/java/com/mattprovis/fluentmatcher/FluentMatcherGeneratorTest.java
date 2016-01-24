@@ -1,6 +1,6 @@
 package com.mattprovis.fluentmatcher;
 
-import com.mattprovis.fluentmatcher.compiled.Example;
+import com.mattprovis.fluentmatcher.integrationtest.simpleclass.Example;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
 import org.joda.time.DateTimeZone;
@@ -46,45 +46,48 @@ public class FluentMatcherGeneratorTest {
 
     @Test
     public void shouldSupportPrimitives() throws Exception {
-        new FluentMatcherGenerator(ExampleWithPrimitive.class, stringWriter).generateMatcher();
+        new FluentMatcherGenerator(ExampleWithPrimitive.class).generateMatcher(stringWriter);
         String generatedSource = stringWriter.toString();
 
-        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithPrimitiveMatcher> SubclassOfMatcher withAnInt(Integer expectedValue)"));
-        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithPrimitiveMatcher> SubclassOfMatcher withAnInt(Matcher<? super Integer> matcher)"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends FluentMatcherGeneratorTestExampleWithPrimitiveMatcher> SubclassOfMatcher withAnInt(Integer expectedValue)"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends FluentMatcherGeneratorTestExampleWithPrimitiveMatcher> SubclassOfMatcher withAnInt(Matcher<? super Integer> matcher)"));
     }
 
     @Test
     public void shouldSupportArrays() throws Exception {
-        new FluentMatcherGenerator(ExampleWithArray.class, stringWriter).generateMatcher();
+        new FluentMatcherGenerator(ExampleWithArray.class).generateMatcher(stringWriter);
         String generatedSource = stringWriter.toString();
 
-        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithArrayMatcher> SubclassOfMatcher withIntArray(int[] expectedValue)"));
-        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithArrayMatcher> SubclassOfMatcher withIntArray(Matcher<int[]> matcher)"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends FluentMatcherGeneratorTestExampleWithArrayMatcher> SubclassOfMatcher withIntArray(int[] expectedValue)"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends FluentMatcherGeneratorTestExampleWithArrayMatcher> SubclassOfMatcher withIntArray(Matcher<int[]> matcher)"));
     }
 
     @Test
     public void shouldSupportLists() throws Exception {
-        new FluentMatcherGenerator(ExampleWithList.class, stringWriter).generateMatcher();
+        new FluentMatcherGenerator(ExampleWithList.class).generateMatcher(stringWriter);
         String generatedSource = stringWriter.toString();
 
-        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithListMatcher> SubclassOfMatcher withStringsList(List<? extends String> expectedValue)"));
-        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithListMatcher> SubclassOfMatcher withStringsList(Matcher<? super List<Object>> matcher)"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends FluentMatcherGeneratorTestExampleWithListMatcher> SubclassOfMatcher withStringsList(List<? extends String> expectedValue)"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends FluentMatcherGeneratorTestExampleWithListMatcher> SubclassOfMatcher withStringsList(Matcher<? super List<Object>> matcher)"));
     }
 
     @Test
     public void shouldSupportBooleansWithAdditionalMethods() throws Exception {
-        new FluentMatcherGenerator(ExampleWithBoolean.class, stringWriter).generateMatcher();
+        FluentMatcherGenerator fluentMatcherGenerator = new FluentMatcherGenerator(ExampleWithBoolean.class);
+        assertThat(fluentMatcherGenerator.getSimpleMatcherClassName(), is("FluentMatcherGeneratorTestExampleWithBooleanMatcher"));
+
+        fluentMatcherGenerator.generateMatcher(stringWriter);
         String generatedSource = stringWriter.toString();
 
-        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithBooleanMatcher> SubclassOfMatcher withOkay(Boolean expectedValue)"));
-        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithBooleanMatcher> SubclassOfMatcher isOkay()"));
-        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithBooleanMatcher> SubclassOfMatcher isNotOkay()"));
-        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithBooleanMatcher> SubclassOfMatcher withOkay(Matcher<? super Boolean> matcher)"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends FluentMatcherGeneratorTestExampleWithBooleanMatcher> SubclassOfMatcher withOkay(Boolean expectedValue)"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends FluentMatcherGeneratorTestExampleWithBooleanMatcher> SubclassOfMatcher isOkay()"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends FluentMatcherGeneratorTestExampleWithBooleanMatcher> SubclassOfMatcher isNotOkay()"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends FluentMatcherGeneratorTestExampleWithBooleanMatcher> SubclassOfMatcher withOkay(Matcher<? super Boolean> matcher)"));
 
-        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithBooleanMatcher> SubclassOfMatcher withGood(Boolean expectedValue)"));
-        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithBooleanMatcher> SubclassOfMatcher isGood()"));
-        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithBooleanMatcher> SubclassOfMatcher isNotGood()"));
-        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends ExampleWithBooleanMatcher> SubclassOfMatcher withGood(Matcher<? super Boolean> matcher)"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends FluentMatcherGeneratorTestExampleWithBooleanMatcher> SubclassOfMatcher withGood(Boolean expectedValue)"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends FluentMatcherGeneratorTestExampleWithBooleanMatcher> SubclassOfMatcher isGood()"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends FluentMatcherGeneratorTestExampleWithBooleanMatcher> SubclassOfMatcher isNotGood()"));
+        assertThat(generatedSource, containsString("public <SubclassOfMatcher extends FluentMatcherGeneratorTestExampleWithBooleanMatcher> SubclassOfMatcher withGood(Matcher<? super Boolean> matcher)"));
     }
 
     @Test
@@ -92,7 +95,7 @@ public class FluentMatcherGeneratorTest {
         DateTimeZone.setDefault(DateTimeZone.forOffsetHours(10));
         DateTimeUtils.setCurrentMillisFixed(new DateTime(2015, 8, 12, 10, 33, 0).getMillis());
 
-        new FluentMatcherGenerator(Example.class, stringWriter).generateMatcher();
+        new FluentMatcherGenerator(Example.class).generateMatcher(stringWriter);
 
         String generatedAnnotationLine = getLineBeginningWith("@Generated", stringWriter.toString());
         assertThat(generatedAnnotationLine, is("@Generated(value = \"com.mattprovis.fluentmatcher.FluentMatcherGenerator\", date = \"2015-08-12T10:33:00.000+10:00\")"));
@@ -103,7 +106,7 @@ public class FluentMatcherGeneratorTest {
         DateTimeZone.setDefault(DateTimeZone.forOffsetHours(1));
         DateTimeUtils.setCurrentMillisFixed(new DateTime(2015, 8, 12, 10, 33, 0).getMillis());
 
-        new FluentMatcherGenerator(Example.class, stringWriter).generateMatcher();
+        new FluentMatcherGenerator(Example.class).generateMatcher(stringWriter);
 
         String generatedAnnotationLine = getLineBeginningWith("@Generated", stringWriter.toString());
         assertThat(generatedAnnotationLine, containsString("\"2015-08-12T10:33:00.000+01:00\""));

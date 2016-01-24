@@ -16,32 +16,92 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import static org.apache.commons.lang3.ArrayUtils.*;
+
 public class FluentMatcherGenerator {
 
-    private final Class<?> beanClass;
-    private final JavaWriter javaWriter;
-    private final String beanClassName;
-    private final String matcherClassName;
+    private final Class<?> pojoClass;
+    private String simpleMatcherClassName;
 
-    public FluentMatcherGenerator(Class<?> beanClass, Writer writer) {
-        javaWriter = new JavaWriter(writer);
-        javaWriter.setIndent("    ");
-        this.beanClass = beanClass;
-        beanClassName = beanClass.getSimpleName();
-        matcherClassName = beanClassName + "Matcher";
+    public FluentMatcherGenerator(Class<?> pojoClass) {
+        this.pojoClass = pojoClass;
+        simpleMatcherClassName = getPojoSimpleClassName(pojoClass) + "Matcher";
     }
 
-    public void generateMatcher() throws IOException {
-        List<Field> fields = new ArrayList<>(ReflectionUtils.getAllFields(beanClass));
-        filterRelevantFields(fields);
+    public void generateMatcher(Writer writer) throws IOException {
+        JavaWriter javaWriter = createJavaWriter(writer);
 
-        MatcherClassWriter classWriter = new MatcherClassWriter(javaWriter, beanClass, beanClassName, matcherClassName);
-        classWriter.writeClassDeclaration(withImportsFor(fields));
+        List<Field> fields = getFields(pojoClass);
+
+        MatcherClassWriter classWriter = new MatcherClassWriter(javaWriter);
+
+        classWriter.writePackage(pojoClass);
+        Class[] imports = withImportsFor(fields);
+        imports = add(imports, pojoClass);
+        classWriter.writeImports(imports);
+
+        String pojoClassName = pojoClass.getCanonicalName();
+
+        classWriter.writeClassDeclaration(pojoClassName, simpleMatcherClassName, false);
         classWriter.writeFieldsEnum(fields);
-        classWriter.writeConstructor();
-        classWriter.writeStaticFactoryMethod();
-        writeMatcherMethods(fields);
+        writeMatchersForInnerTypes(classWriter, fields);
+        classWriter.writeConstructor(pojoClassName);
+        classWriter.writeStaticFactoryMethod(pojoClass.getSimpleName(), simpleMatcherClassName);
+        classWriter.writeMatcherMethods(fields, getFullMatcherClassName());
         classWriter.writeClassFooter();
+    }
+
+    private JavaWriter createJavaWriter(Writer writer) {
+        JavaWriter javaWriter = new JavaWriter(writer);
+        javaWriter.setIndent("    ");
+        return javaWriter;
+    }
+
+    private static String getPojoSimpleClassName(Class<?> clazz) {
+        StringBuilder name = new StringBuilder();
+
+        do {
+            name.insert(0, clazz.getSimpleName());
+            clazz = clazz.getEnclosingClass();
+        } while (clazz != null);
+
+        return name.toString();
+    }
+
+    private void writeMatchersForInnerTypes(MatcherClassWriter classWriter, List<Field> fields) throws IOException {
+
+        for (Field field : fields) {
+            Class<?> innerType = field.getType();
+            Class<?> enclosingClass = innerType.getEnclosingClass();
+            if (enclosingClass == pojoClass) {
+                generateMatcherForInnerType(classWriter, innerType);
+            }
+        }
+    }
+
+    private void generateMatcherForInnerType(MatcherClassWriter classWriter, Class<?> innerType) throws IOException {
+        String innerTypeName = innerType.getSimpleName();
+
+        if (innerType.isEnum()) {
+            return;
+        }
+
+        List<Field> fields = getFields(innerType);
+        String matcherName = innerTypeName + "Matcher";
+        String innerClassMatcherName = classWriter.writeClassDeclaration(innerTypeName, matcherName, true);
+        classWriter.writeFieldsEnum(fields);
+        classWriter.writeConstructor(innerTypeName);
+
+        classWriter.writeStaticFactoryMethod(innerTypeName, matcherName);
+
+        classWriter.writeMatcherMethods(fields, innerClassMatcherName);
+        classWriter.writeClassFooter();
+    }
+
+    private List<Field> getFields(Class<?> type) {
+        List<Field> fields = new ArrayList<>(ReflectionUtils.getAllFields(type));
+        filterRelevantFields(fields);
+        return fields;
     }
 
     /**
@@ -82,12 +142,11 @@ public class FluentMatcherGenerator {
         }
     }
 
-    private void writeMatcherMethods(List<Field> fields) throws IOException {
-        for (Field field : fields) {
-            MatcherMethodWriter matcherMethodWriter = new MatcherMethodWriter(javaWriter, matcherClassName, field);
-            matcherMethodWriter.writeWithValueMethod();
-            matcherMethodWriter.writeWithMatcherMethod();
-            matcherMethodWriter.writeIsAndIsNotMethodsForBoolean();
-        }
+    public String getSimpleMatcherClassName() {
+        return simpleMatcherClassName;
+    }
+
+    public String getFullMatcherClassName() {
+        return pojoClass.getPackage().getName() + "." + simpleMatcherClassName;
     }
 }

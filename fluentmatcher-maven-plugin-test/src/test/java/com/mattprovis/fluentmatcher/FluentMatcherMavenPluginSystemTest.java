@@ -14,7 +14,7 @@ import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-public class FluentMatcherMavenPluginTest {
+public class FluentMatcherMavenPluginSystemTest {
 
     private final Passenger alice = new Passenger("Alice", true);
     private final Passenger bob = new Passenger("Bob", false);

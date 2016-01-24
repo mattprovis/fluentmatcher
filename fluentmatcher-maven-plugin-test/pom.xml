@@ -31,8 +31,12 @@
                         <configuration>
                             <pojos>
                                 <pojo>com.mattprovis.fluentmatcher.Car</pojo>
+                                <pojo>com.mattprovis.fluentmatcher.SparePartsFactory$Headlight</pojo>
+                                <pojo>com.mattprovis.fluentmatcher.SparePartsFactory$GearStick</pojo>
                                 <pojo>com.mattprovis.fluentmatcher.Passenger</pojo>
                                 <pojo>junit.framework.TestResult</pojo>
+                                <pojo>com.mattprovis.fluentmatcher.Wheel</pojo>
+                                <pojo>com.mattprovis.fluentmatcher.EntertainmentSystem</pojo>
                             </pojos>
                         </configuration>
                         <goals>

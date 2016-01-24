@@ -5,8 +5,10 @@ import org.joda.time.DateTime;
 import org.joda.time.format.ISODateTimeFormat;
 
 import javax.annotation.Generated;
+import javax.lang.model.element.Modifier;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.EnumSet;
 import java.util.List;
 
 import static java.util.EnumSet.of;
@@ -17,32 +19,36 @@ import static org.apache.commons.lang3.StringUtils.uncapitalize;
 
 public class MatcherClassWriter {
 
-    private final Class<?> beanClass;
     private final JavaWriter javaWriter;
-    private final String beanClassName;
-    private final String matcherClassName;
+    private final String generatedAnnotationAttributes;
 
-    public MatcherClassWriter(JavaWriter javaWriter, Class<?> beanClass, String beanClassName, String matcherClassName) {
+    public MatcherClassWriter(JavaWriter javaWriter) {
         this.javaWriter = javaWriter;
-        this.beanClass = beanClass;
-        this.beanClassName = beanClassName;
-        this.matcherClassName = matcherClassName;
+        generatedAnnotationAttributes = getGeneratedAnnotationAttributes();
     }
 
-    public void writeClassDeclaration(Class[] imports) throws IOException {
-        String extendsType = FluentMatcher.class.getSimpleName() + "<" + beanClassName + ">";
+    public void writePackage(Class<?> pojoClass) throws IOException {
+        javaWriter
+                .emitPackage(pojoClass.getPackage().getName());
+    }
 
-        String valueAttribute = "value = \"" + FluentMatcherGenerator.class.getName() + "\"";
-        String dateAttribute = "date = \"" + new DateTime().toString(ISODateTimeFormat.dateTime()) + "\"";
-        String generatedAnnotationAttributes = valueAttribute + ", " + dateAttribute;
+    public void writeImports(Class[] imports) throws IOException {
+        javaWriter
+                .emitImports(imports);
+    }
+
+    public String writeClassDeclaration(String pojoClassName, String matcherName, boolean isInner) throws IOException {
+        String extendsType = FluentMatcher.class.getSimpleName() + "<" + pojoClassName + ">";
+
+        EnumSet<Modifier> modifiers = isInner ? of(STATIC, PUBLIC) : of(PUBLIC);
 
         javaWriter
-                .emitPackage(beanClass.getPackage().getName())
-                .emitImports(imports)
                 .emitEmptyLine()
                 .emitAnnotation(Generated.class, generatedAnnotationAttributes)
-                .beginType(matcherClassName, "class", of(PUBLIC), extendsType)
+                .beginType(matcherName, "class", modifiers, extendsType)
                 .emitEmptyLine();
+
+        return matcherName;
     }
 
     public void writeFieldsEnum(List<Field> fields) throws IOException {
@@ -59,21 +65,37 @@ public class MatcherClassWriter {
                 .emitEmptyLine();
     }
 
-    public void writeConstructor() throws IOException {
+    public void writeConstructor(String pojoClassName) throws IOException {
         javaWriter
-                .beginConstructor(of(PROTECTED)).emitStatement("super(%s.class)", beanClassName).endConstructor()
+                .beginConstructor(of(PROTECTED)).emitStatement("super(%s.class)", pojoClassName).endConstructor()
                 .emitEmptyLine();
     }
 
-    public void writeStaticFactoryMethod() throws IOException {
+    public void writeStaticFactoryMethod(String className, String matcherName) throws IOException {
         javaWriter
-                .beginMethod(matcherClassName, uncapitalize(beanClassName), of(PUBLIC, STATIC))
-                .emitStatement("return new %s()", matcherClassName)
+                .beginMethod(matcherName, uncapitalize(className), of(PUBLIC, STATIC))
+                .emitStatement("return new %s()", matcherName)
                 .endMethod()
                 .emitEmptyLine();
     }
 
     public void writeClassFooter() throws IOException {
         javaWriter.endType();
+        javaWriter.emitEmptyLine();
+    }
+
+    private String getGeneratedAnnotationAttributes() {
+        String valueAttribute = "value = \"" + FluentMatcherGenerator.class.getName() + "\"";
+        String dateAttribute = "date = \"" + new DateTime().toString(ISODateTimeFormat.dateTime()) + "\"";
+        return valueAttribute + ", " + dateAttribute;
+    }
+
+    public void writeMatcherMethods(List<Field> fields, String matcherClassName) throws IOException {
+        for (Field field : fields) {
+            MatcherMethodWriter matcherMethodWriter = new MatcherMethodWriter(javaWriter, matcherClassName, field);
+            matcherMethodWriter.writeWithValueMethod();
+            matcherMethodWriter.writeWithMatcherMethod();
+            matcherMethodWriter.writeIsAndIsNotMethodsForBoolean();
+        }
     }
 }
