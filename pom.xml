@@ -4,7 +4,7 @@
 
     <groupId>com.mattprovis</groupId>
     <artifactId>fluentmatcher</artifactId>
-    <version>0.3</version>
+    <version>0.4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -47,7 +47,7 @@
     <scm>
         <connection>scm:git:git@github.com:mattprovis/fluentmatcher.git</connection>
         <url>git@github.com:mattprovis/fluentmatcher.git</url>
-        <tag>v0.3</tag>
+        <tag>v0.2</tag>
     </scm>
 
     <profiles>
