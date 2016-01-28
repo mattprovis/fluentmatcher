@@ -50,7 +50,7 @@ public void shouldBeAFastCarWithAnAutomaticTransmission() {
 
 All criteria you specify will be matched, and anything you don't is simply ignored.
 
-Fluentmatcher supports:
+Fluentmatcher features:
 
 * A static factory method in each matcher for more readable tests
 * Typesafe `withX(...)` methods for all fields in the class
@@ -58,20 +58,20 @@ Fluentmatcher supports:
 * Assert by delegating to another matcher
 * Match values in private fields, even without exposed getter methods
 * Convenient `isX()` and `isNotX()` for boolean fields
+* Matchers can be generated for inner classes and enums
+* Supports manually created subclasses of generated matchers for your own customisations
 * Matcher is recreated if the matched class changes
 * Java 7 and 8 compatible
 
 ## Usage
 
-> Fluentmatcher is not yet available from the Maven Central repository. Please checkout this project from github and use `mvn install` to deploy the plugin to your your local repository, before adding it to your project.
-
-Add the plugin to your project's `pom.xml`, and list the classes for which you require matchers to be generated in `execution/configuration/pojos`.
+Fluentmatcher is available from the Maven Central repository. Add the plugin to your project's `pom.xml`, and list the classes for which you require matchers to be generated in `execution/configuration/pojos`.
 
 ```xml
 <plugin>
     <groupId>com.mattprovis</groupId>
     <artifactId>fluentmatcher-maven-plugin</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.3</version>
     <executions>
         <execution>
             <configuration>
